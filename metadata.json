@@ -1,0 +1,5 @@
+{
+  "name": "5W1H Task Manager",
+  "description": "A task management application based on the 5W1H framework (Who, When, Where, What, Why, How).",
+  "requestFramePermissions": []
+}

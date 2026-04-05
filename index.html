@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5W1H Task Manager</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body class="bg-[#F7F9FC] text-[#1C1B1F] font-sans">
+    <div id="app">
+        <!-- Top App Bar -->
+        <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                </div>
+                <h1 class="text-lg font-bold">5W1H Task</h1>
+            </div>
+            <div id="view-switcher" class="hidden md:flex bg-slate-100 p-1 rounded-xl">
+                <button onclick="setView('list')" id="btn-list" class="px-4 py-1.5 rounded-lg text-sm font-medium bg-white text-indigo-600 shadow-sm">リスト</button>
+                <button onclick="setView('calendar')" id="btn-calendar" class="px-4 py-1.5 rounded-lg text-sm font-medium text-slate-500">カレンダー</button>
+            </div>
+        </header>
+
+        <main id="main-content" class="pb-24 pt-6 px-4 max-w-5xl mx-auto">
+            <!-- Task List will be injected here -->
+            <div id="task-list" class="space-y-3"></div>
+            <!-- Calendar View will be injected here -->
+            <div id="calendar-view" class="hidden bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden"></div>
+        </main>
+
+        <!-- FAB -->
+        <button onclick="openForm()" class="fixed bottom-24 right-6 z-40 w-14 h-14 bg-indigo-600 text-white rounded-2xl shadow-xl flex items-center justify-center hover:bg-indigo-700 active:scale-90 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+
+        <!-- Bottom Nav -->
+        <nav class="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-lg border-t border-slate-200 h-16 flex items-center justify-around md:hidden">
+            <button onclick="setView('list')" class="flex flex-col items-center gap-1">
+                <div id="nav-list-icon" class="px-5 py-1 rounded-full bg-indigo-50 text-indigo-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                </div>
+                <span class="text-[10px] font-bold">リスト</span>
+            </button>
+            <button onclick="setView('calendar')" class="flex flex-col items-center gap-1">
+                <div id="nav-calendar-icon" class="px-5 py-1 rounded-full text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </div>
+                <span class="text-[10px] font-bold">カレンダー</span>
+            </button>
+        </nav>
+
+        <!-- Bottom Sheet Form -->
+        <div id="form-overlay" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]" onclick="closeForm()"></div>
+        <div id="bottom-sheet" class="hidden fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-[32px] shadow-2xl max-h-[90vh] overflow-y-auto px-6 pt-2 pb-8 md:max-w-2xl md:mx-auto md:rounded-3xl md:bottom-10">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-4"></div>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold">新しいタスク</h2>
+                <button onclick="closeForm()" class="p-2 hover:bg-slate-100 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <form id="task-form" class="space-y-5">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">何を (What)</label>
+                    <input type="text" id="input-what" placeholder="タスクの内容を入力" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">いつ (When)</label>
+                        <input type="text" id="input-when" placeholder="YYYY-MM-DD" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">だれが (Who)</label>
+                        <input type="text" id="input-who" placeholder="担当者" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">どこで (Where)</label>
+                        <input type="text" id="input-where" placeholder="場所" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">なぜ (Why)</label>
+                        <input type="text" id="input-why" placeholder="目的・理由" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">どうする (How)</label>
+                    <input type="text" id="input-how" placeholder="具体的な方法" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98] mt-4">タスクを保存</button>
+            </form>
+        </div>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
